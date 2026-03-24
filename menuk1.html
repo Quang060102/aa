@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BIA VƯỜN NHÀ BI</title>
+    <style>
+        body { font-family: Arial; background: #0a0a0a; color: white; margin: 0; overflow-x: hidden; }
+        
+        .header { text-align: center; padding: 20px; background: #000; border-bottom: 3px solid #ffb400; }
+        .header h1 { color: #ffb400; margin: 0; }
+        
+        .ban { text-align: center; padding: 15px; font-size: 18px; background: #0a0a0a; }
+
+        /* THANH TAB DÍNH TRÊN ĐẦU */
+        .tab-container {
+            display: flex;
+            overflow-x: auto; /* Cho phép thanh Tab cũng vuốt ngang nếu quá dài */
+            white-space: nowrap;
+            background: #111;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 2px solid #ffb400;
+        }
+        .tab-container::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+            flex: 0 0 auto;
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 15px;
+            font-weight: bold;
+            padding: 15px 20px;
+            cursor: pointer;
+        }
+        .tab-btn.active { color: #ffb400; border-bottom: 3px solid #ffb400; }
+
+        /* KHUNG VUỐT NGANG - ĐÃ SỬA ĐỂ KHÔNG BỊ DỌC */
+        .slider {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            width: 100vw;
+        }
+        .slider::-webkit-scrollbar { display: none; }
+
+        /* MỖI TRANG MÓN ĂN */
+        .page {
+            flex: 0 0 100vw !important; /* Ép rộng đúng 1 màn hình */
+            width: 100vw !important;
+            min-width: 100vw !important;
+            scroll-snap-align: start;
+            display: block !important; /* Phải để block để xếp hàng */
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .page h2 { color: #ffb400; border-left: 4px solid #ffb400; padding-left: 10px; }
+
+        .item { display: flex; justify-content: space-between; align-items: center; padding: 15px 10px; border-bottom: 1px solid #222; }
+        .price { color: #ffb400; font-weight: bold; margin-right: 10px;}
+        .right { display: flex; align-items: center; }
+        .qty { display: flex; align-items: center; gap: 8px; }
+
+        button { background: #ffb400; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; touch-action: manipulation; }
+        button:active { transform: scale(0.9); background: #e6a200; }
+        
+        .count { min-width: 25px; text-align: center; font-weight: bold; color: #ffb400; }
+
+        .cart { padding: 20px; background: #111; margin-top: 20px; border-top: 1px solid #333; }
+        .send { width: 100%; padding: 15px; font-size: 18px; background: #ffb400; font-weight: bold; border-radius: 8px; margin-top: 15px; }
+        
+        * { -webkit-tap-highlight-color: transparent; }
+    </style>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>🍺 BIA VƯỜN NHÀ BI</h1>
+    <p>Vuốt sang để xem món</p>
+</div>
+
+<div class="ban">
+    Bàn: 
+    <input list="danh-sach-ban" id="ban" placeholder="Chọn bàn..." 
+           style="width: 150px; padding: 8px; border: 1px solid #ff9800; border-radius: 5px; background: #222; color: white;">
+    <datalist id="danh-sach-ban">
+        <option value="Bàn lộc vừng trái">
+        <option value="Bàn lộc vừng giữa">
+        <option value="Bàn lộc vừng phải">
+        <option value="Bàn đào tiên trái">
+        <option value="Bàn đào tiên phải">
+        <option value="Bàn cột đèn ngoài">
+        <option value="Bàn cột đèn trong">
+        <option value="Mang về">
+    </datalist>
+</div>
+
+<div class="tab-container">
+    <button class="tab-btn active" onclick="openTab(event, 'page-khai-vi')">🥗 Khai vị</button>
+    <button class="tab-btn" onclick="openTab(event, 'page-nuong')">🔥 Nướng</button>
+    <button class="tab-btn" onclick="openTab(event, 'page-mon-xao')">🥘 Xào</button>
+    <button class="tab-btn" onclick="openTab(event, 'page-mon-chien')">🍳 Chiên</button>
+    <button class="tab-btn" onclick="openTab(event, 'page-mon-lau')">🍲 Lẩu</button>
+    <button class="tab-btn" onclick="openTab(event, 'page-com-my')">🍛 Cơm mỳ</button>
+    <button class="tab-btn" onclick="openTab(event, 'page-do-uong')">🥤 Đồ uống</button>
+</div>
+
+<div class="slider">
+    <div class="page" id="page-khai-vi">
+        <h2>🥗 Khai vị</h2>
+        <div class="item"><span>01. Đậu rán</span><div class="right"><span class="price">30k</span><div class="qty"><button onclick="minus('Đậu rán')">-</button><span id="Đậu rán" class="count">0</span><button onclick="add('Đậu rán')">+</button></div></div></div>
+        <div class="item"><span>02. Đậu tẩm hành</span><div class="right"><span class="price">40k</span><div class="qty"><button onclick="minus('Đậu tẩm hành')">-</button><span id="Đậu tẩm hành" class="count">0</span><button onclick="add('Đậu tẩm hành')">+</button></div></div></div>
+        <div class="item"><span>03. Nem chua</span><div class="right"><span class="price">40k</span><div class="qty"><button onclick="minus('Nem chua')">-</button><span id="Nem chua" class="count">0</span><button onclick="add('Nem chua')">+</button></div></div></div>
+        </div>
+
+    <div class="page" id="page-nuong">
+        <h2>🔥 Món nướng</h2>
+        <div class="item"><span>01. Gà nướng cả con</span><div class="right"><span class="price">300k</span><div class="qty"><button onclick="minus('Gà nướng cả con')">-</button><span id="Gà nướng cả con" class="count">0</span><button onclick="add('Gà nướng cả con')">+</button></div></div></div>
+        <div class="item"><span>02. Tôm nướng</span><div class="right"><span class="price">150k</span><div class="qty"><button onclick="minus('Tôm nướng')">-</button><span id="Tôm nướng" class="count">0</span><button onclick="add('Tôm nướng')">+</button></div></div></div>
+    </div>
+
+    <div class="page" id="page-mon-xao">
+        <h2>🥘 Món xào</h2>
+        <div class="item"><span>01. Rau xào</span><div class="right"><span class="price">40k</span><div class="qty"><button onclick="minus('Rau xào')">-</button><span id="Rau xào" class="count">0</span><button onclick="add('Rau xào')">+</button></div></div></div>
+    </div>
+
+    <div class="page" id="page-mon-chien">
+        <h2>🍳 Món chiên</h2>
+        <div class="item"><span>01. Ếch rang muối</span><div class="right"><span class="price">120k</span><div class="qty"><button onclick="minus('Ếch rang muối')">-</button><span id="Ếch rang muối" class="count">0</span><button onclick="add('Ếch rang muối')">+</button></div></div></div>
+    </div>
+
+    <div class="page" id="page-mon-lau">
+        <h2>🍲 Lẩu</h2>
+        <div class="item"><span>01. Lẩu thái thập cẩm</span><div class="right"><span class="price">500k</span><div class="qty"><button onclick="minus('Lẩu thái thập cẩm')">-</button><span id="Lẩu thái thập cẩm" class="count">0</span><button onclick="add('Lẩu thái thập cẩm')">+</button></div></div></div>
+    </div>
+
+    <div class="page" id="page-com-my">
+        <h2>🍛 Cơm mỳ</h2>
+        <div class="item"><span>01. Cơm rang thập cẩm</span><div class="right"><span class="price">60k</span><div class="qty"><button onclick="minus('Cơm rang thập cẩm')">-</button><span id="Cơm rang thập cẩm" class="count">0</span><button onclick="add('Cơm rang thập cẩm')">+</button></div></div></div>
+    </div>
+
+    <div class="page" id="page-do-uong">
+        <h2>🥤 Đồ uống</h2>
+        <div class="item"><span>01. Bia hơi</span><div class="right"><span class="price">8k</span><div class="qty"><button onclick="minus('Bia hơi')">-</button><span id="Bia hơi" class="count">0</span><button onclick="add('Bia hơi')">+</button></div></div></div>
+    </div>
+</div>
+
+<div class="cart">
+    <h3>🛒 Món đã chọn</h3>
+    <ul id="cart-list" style="list-style: none; padding: 0;"></ul>
+    <button class="send" onclick="sendOrder()">📩 Gửi gọi món</button>
+</div>
+
+<script>
+    const url = "https://script.google.com/macros/s/AKfycbyAWcjt-ED5VxAa1TxKGqg47Sfa98NoViESMIzYyn0kEXV7Mses76wXVX8_49hNQyXb/exec";
+    let cart = {};
+
+    function add(food) {
+        if (!cart[food]) cart[food] = 0;
+        cart[food]++;
+        update();
+    }
+
+    function minus(food) {
+        if (cart[food]) {
+            cart[food]--;
+            if (cart[food] <= 0) delete cart[food];
+            update();
+        }
+    }
+
+    function update() {
+        let list = document.getElementById("cart-list");
+        list.innerHTML = "";
+        document.querySelectorAll(".count").forEach(e => e.innerText = 0);
+
+        for (let food in cart) {
+            let li = document.createElement("li");
+            li.style.padding = "10px 0";
+            li.style.borderBottom = "1px solid #333";
+            li.innerText = "✅ " + food + " x " + cart[food];
+            list.appendChild(li);
+            
+            if (document.getElementById(food)) {
+                document.getElementById(food).innerText = cart[food];
+            }
+        }
+    }
+
+    function sendOrder() {
+        let inputBan = document.getElementById("ban");
+        let soBan = inputBan ? inputBan.value : "";
+
+        if (!soBan) { alert("⚠️ Chọn số bàn đã nhé!"); return; }
+        if (Object.keys(cart).length === 0) { alert("🛒 Chọn món đã bạn ơi!"); return; }
+
+        let order = "";
+        for (let food in cart) { order += food + " x" + cart[food] + ", "; }
+
+        fetch(url, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ban: soBan, mon: order })
+        });
+
+        alert("✅ Gửi đơn thành công: " + soBan);
+        cart = {}; update();
+    }
+
+    function openTab(evt, tabId) {
+        var slider = document.querySelector('.slider');
+        var targetPage = document.getElementById(tabId);
+        if (slider && targetPage) {
+            slider.scrollTo({ left: targetPage.offsetLeft, behavior: 'smooth' });
+        }
+        updateActiveTab(tabId);
+    }
+
+    function updateActiveTab(tabId) {
+        var buttons = document.getElementsByClassName("tab-btn");
+        for (var i = 0; i < buttons.length; i++) {
+            buttons[i].classList.remove("active");
+            // So sánh ID để sáng đèn nút tương ứng
+            if (buttons[i].getAttribute('onclick').includes(tabId)) {
+                buttons[i].classList.add("active");
+            }
+        }
+    }
+
+    // Tự động nhảy Tab khi vuốt ngang
+    document.querySelector('.slider').addEventListener('scroll', function() {
+        var scrollLeft = this.scrollLeft;
+        var pageWidth = this.clientWidth;
+        var activeIndex = Math.round(scrollLeft / pageWidth);
+        
+        var buttons = document.getElementsByClassName("tab-btn");
+        for (var i = 0; i < buttons.length; i++) {
+            buttons[i].classList.remove("active");
+        }
+        if(buttons[activeIndex]) {
+            buttons[activeIndex].classList.add("active");
+            // Tự cuộn thanh Tab nếu nút nằm ngoài màn hình
+            buttons[activeIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+    });
+</script>
+
+</body>
+</html>
